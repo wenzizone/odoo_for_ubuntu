@@ -1,0 +1,16 @@
+---
+- name: this is a play at the top level of a file
+  hosts: odoo
+  remote_user: ubuntu
+  sudo: yes
+  sudo_user: root
+
+  vars:
+    dbname: odoo
+    dbpasswd: NULL
+    domain_name: test-odoo.wenzizone.cn
+
+  roles:
+    - role: odoo
+
+

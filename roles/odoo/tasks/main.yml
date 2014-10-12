@@ -1,0 +1,41 @@
+---
+# Add specified repository into sources list.
+- name: configure apt repository
+  apt_repository: repo='deb http://nightly.openerp.com/8.0/nightly/deb/ ./' state=present
+
+# Update all packages to the latest version
+#- name: Update all packages to the latest version
+#  apt: upgrade=dist
+
+# odoo part
+- name: install odoo
+  apt: name=odoo state=present force=yes
+  register: odooinstalled
+
+# Create a new database with name
+- name: Create a new database with name {{ dbname }}
+  sudo: yes
+  sudo_user: postgres
+  postgresql_db: name={{ dbname }}
+
+# Create postsql user and grant access to database
+- name: Create postsql user and grant access to database
+  sudo: yes
+  sudo_user: postgres
+  postgresql_user: db={{ dbname }} name=odoo password={{ dbpasswd }} priv=ALL
+
+- name: set odoo configure file
+  template: src=openerp-server.conf.j2 dest=/etc/odoo/openerp-server.conf
+  notify:
+    - restart odoo
+
+# web part
+- name: install nginx
+  apt: name=nginx state=present force=yes
+
+- name: create odoo nginx proxy config
+  template: src=odoo.conf.j2 dest=/etc/nginx/conf.d/odoo.conf
+  notify: 
+    - restart nginx
+
+
